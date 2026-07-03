@@ -1,0 +1,6 @@
+name=Nova Strike
+author=sdwfrost
+description=A 1-bit vertical shmup built on the shmup engine.
+bundleID=com.sdwfrost.shmup.nova
+version=1.0
+buildNumber=1
