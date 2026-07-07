@@ -17,6 +17,19 @@ The engine supports **three scroll paradigms**, and ships a demo of each:
 Games are almost entirely *data* — enemy types compose a small library of
 movement/fire behaviours, and waves are a spawn timeline.
 
+- **Players:** [MANUAL.md](MANUAL.md) — how to play all three games, with enemy
+  rundowns and tips.
+- **Developers:** [DEVGUIDE.md](DEVGUIDE.md) — the engine architecture and how
+  to add a new game to the collection.
+
+## Play it
+
+Prebuilt `.pdx` bundles ship in `dist/` and on the
+[Releases](../../releases) page — no toolchain needed. Download
+`Nova.pdx.zip`, `Ravine.pdx.zip`, or `Skimmer.pdx.zip`, then sideload at
+<https://play.date/account/sideload/> or unzip into the Playdate Simulator.
+Building from source is below.
+
 ## Engine (`core/`)
 
 | module | responsibility |
