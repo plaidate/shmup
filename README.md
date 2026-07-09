@@ -1,5 +1,7 @@
 # shmup
 
+> Part of **[plAIdate](https://plaidate.github.io)** — AI-built 1-bit games, ports, and engines for the Playdate.
+
 A generic **1-bit shoot-'em-up engine** for the [Panic Playdate](https://play.date/),
 written in pure Playdate Lua and targeted at the 400×240 screen. The visual
 approach follows the lesson from porting OpenTyrian to 1-bit: **solid white
