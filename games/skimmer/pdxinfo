@@ -1,6 +1,7 @@
 name=Skimmer
-author=sdwfrost
+author=Simon Frost
 description=A 1-bit back-and-forth horizontal cave-flyer built on the shmup engine.
 bundleID=com.sdwfrost.shmup.skimmer
 version=0.1
-buildNumber=1
+buildNumber=2
+imagePath=launcher

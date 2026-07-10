@@ -1,6 +1,7 @@
 name=Ravine
-author=sdwfrost
+author=Simon Frost
 description=A 1-bit horizontal cave-flyer built on the shmup engine.
 bundleID=com.sdwfrost.shmup.ravine
 version=0.1
-buildNumber=1
+buildNumber=2
+imagePath=launcher
