@@ -43,13 +43,27 @@ local function makeBot()
     local BOMB_VX <const> = 90
     local BOMB_VY <const> = 30
 
-    -- Where should we be, vertically? The middle of the gap a little way ahead:
-    -- at 66 px/s, the wall we have to clear is one we can already see.
-    local function gapCenter()
+    -- Where should we be, vertically, and what is actually safe?
+    --
+    -- These are two different questions and the first version answered only
+    -- one. It aimed at the middle of the gap 46 px AHEAD -- correct, since at
+    -- 66 px/s the wall you must clear is one you can already see -- but it also
+    -- CLAMPED to the gap 46 px ahead, while colliding at its own x. Where the
+    -- cavern is narrower here than it is there, "safe" was being measured in
+    -- the wrong place, and the ship clipped a wall it had already checked.
+    --
+    -- So: aim at the gap ahead, but clamp to the TIGHTEST gap anywhere in the
+    -- span we currently occupy and are about to.
+    local function gap()
         local ahead = math.min(SCREEN_W - 1, Player.x + 46)
-        local g = Terrain.groundY(ahead)
-        local c = Terrain.ceilY(ahead)
-        return (g + c) / 2, c, g
+        local mid = (Terrain.groundY(ahead) + Terrain.ceilY(ahead)) / 2
+
+        local lo, hi = -1e9, 1e9        -- worst ceiling, worst ground
+        for x = Player.x, ahead, 12 do
+            lo = math.max(lo, Terrain.ceilY(x))
+            hi = math.min(hi, Terrain.groundY(x))
+        end
+        return mid, lo, hi
     end
 
     -- Fall time for a bomb dropped now, from
@@ -78,6 +92,48 @@ local function makeBot()
         return false
     end
 
+    -- A capsule that is about to drift onto us anyway. This bot used to ignore
+    -- power-ups entirely and it showed: it reached the barge on weapon 1, ground
+    -- the boss down to single digits over a long fight, and died -- about half
+    -- the time, depending on which second of the clock the Simulator seeded
+    -- from. A short fight is a safe fight, and the way to shorten it is a bigger
+    -- gun.
+    --
+    -- But collecting must stay OPPORTUNISTIC. The first version of this chased
+    -- capsules down, steering x as well as y -- and promptly started dying one
+    -- wave short of the boss again, because a bot pursuing a capsule is a bot
+    -- not aiming at the UFOs, and the UFOs pile up ahead of it exactly as they
+    -- did before. The world here moves at 66 px/s and it moves TOWARD us: we do
+    -- not need to fetch anything. We only need to be at the right altitude when
+    -- it arrives.
+    local function capsuleNear()
+        local best, bd
+        local pp = Power.pool
+        for i = 1, pp.n do
+            local p = pp.items[i]
+            if not p.dead then
+                local dx = p.x - Player.x
+                if dx > -20 and dx < 95 and (not bd or dx < bd) then
+                    bd, best = dx, p
+                end
+            end
+        end
+        return best
+    end
+
+    -- Is something we have to shoot bearing down on us? If so, the capsule waits.
+    local function ufoClosing()
+        local pool = Enemies.pool
+        for i = 1, pool.n do
+            local e = pool.items[i]
+            if not e.dead and e.type == "ufo" then
+                local dx = e.x - Player.x
+                if dx > 0 and dx < 150 then return true end
+            end
+        end
+        return false
+    end
+
     -- The nearest thing we can actually shoot, while it is still far enough
     -- away that lining up on it is safe. Bullets fly flat along our row, so
     -- "aiming" in the side frame means choosing an altitude. The boss counts:
@@ -96,48 +152,78 @@ local function makeBot()
         return best and best.y or nil
     end
 
-    -- Incoming fire: solve for when it reaches our column and step out of the
-    -- row it will be in when it gets there.
+    -- PICK AN ALTITUDE. Do not lean away from things.
     --
-    -- And incoming HULLS. The first bot only dodged bullets, and it kept dying
-    -- three-quarters of the way through the cavern -- to the rockets, which
-    -- launch off the floor and climb straight up through the gap you are flying
-    -- down the middle of. In this frame the enemy is not the thing shooting at
-    -- you; it is the thing occupying the space you are about to be in.
-    local function dodgeY()
-        local shift = 0
+    -- Three bots died writing this function. Each was reactive: find the threat,
+    -- lean the other way. Each failed in its own way, and the ways were
+    -- instructive. Leaning away from the CURRENT position of a bullet ignores
+    -- that the bullet is moving. Summing the leans from several bullets cancels
+    -- to zero when you are caught between two of them, and the bot then flies
+    -- perfectly straight into the crossfire. And recomputing the lean every
+    -- frame makes the bot slide just far enough that the threat stops
+    -- registering, whereupon it steers calmly back into the bullet it has not
+    -- yet been hit by.
+    --
+    -- Every failing seed died the same way, and the death-cause counters said so
+    -- in one word: bullet, bullet, bullet, bullet. Not the wall. Not a hull.
+    --
+    -- So: stop reacting. The gap is one-dimensional and about 150 px tall, which
+    -- is nothing -- so sample every altitude in it, score each by how close the
+    -- incoming fire will pass to it AT THE MOMENT IT ARRIVES, add the cost of
+    -- flying there and a pull toward whatever we would like to shoot, and take
+    -- the best. It is a planner rather than a reflex, it costs a couple of
+    -- hundred comparisons a frame, and it does not oscillate, because the cost
+    -- of moving is part of the thing it is minimising.
+    local function bestY(ceil, ground, aim)
+        local lo, hi = ceil + 16, ground - 16
+        if hi < lo then return (lo + hi) / 2, 0 end
 
-        local ep = Bullets.ep
-        for i = 1, ep.n do
-            local b = ep.items[i]
-            if not b.dead and b.vx < -20 then
-                local t = (b.x - Player.x) / -b.vx
-                if t > 0 and t < 1.2 then
-                    local dy = (b.y + b.vy * t) - Player.y
-                    if math.abs(dy) < 26 then
-                        shift = shift + (dy >= 0 and -1 or 1)
+        local ep, pool = Bullets.ep, Enemies.pool
+        local best, bestScore, crowd = Player.y, -1e18, 0
+
+        for y = lo, hi, 5 do
+            local danger = 0
+
+            for i = 1, ep.n do
+                local b = ep.items[i]
+                if not b.dead and b.vx < -20 then
+                    local t = (b.x - Player.x) / -b.vx
+                    if t > 0 and t < 1.7 then
+                        local d = math.abs((b.y + b.vy * t) - y)
+                        if d < 32 then danger = danger + (32 - d) end
                     end
                 end
             end
+
+            for i = 1, pool.n do
+                local e = pool.items[i]
+                if not e.dead then
+                    local dx = e.x - Player.x
+                    if dx > -20 and dx < 130 then
+                        local d = math.abs(e.y - y)
+                        -- a hull is bigger than a bullet and kills just as dead
+                        if d < 36 then danger = danger + (36 - d) * 2 end
+                    end
+                end
+            end
+
+            local score = -danger * 4 - math.abs(y - Player.y) * 0.3
+            if aim then score = score - math.abs(y - aim) * 0.4 end
+            if score > bestScore then bestScore, best = score, y end
         end
 
-        local pool = Enemies.pool
+        -- how busy is it right here? (for the horizontal give-ground)
         for i = 1, pool.n do
             local e = pool.items[i]
             if not e.dead then
                 local dx = e.x - Player.x
-                if dx > -14 and dx < 76 then
-                    local dy = e.y - Player.y
-                    if math.abs(dy) < 26 then
-                        -- lean away, hard: a hull costs a life, a bullet costs
-                        -- a life, and the hull is bigger
-                        shift = shift + (dy >= 0 and -2 or 2)
-                    end
+                if dx > -14 and dx < 110 and math.abs(e.y - Player.y) < 30 then
+                    crowd = crowd + 1
                 end
             end
         end
 
-        return Lib.sign(shift)
+        return best, crowd
     end
 
     return function()
@@ -150,30 +236,31 @@ local function makeBot()
             return cmd
         end
 
-        local mid, ceil, ground = gapCenter()
-        local want = mid
+        local mid, ceil, ground = gap()
 
-        -- Line the gun up on whatever is still far enough away to shoot. A bot
-        -- that only ever dodges never kills the air targets, so they pile up
-        -- ahead of it and it eventually gets cornered by the sheer number of
-        -- them -- which is precisely how this one kept dying at 93% of the
-        -- level, one wave short of the boss.
+        -- What we would LIKE: line the gun up on the nearest air target, or on
+        -- a capsule that is drifting onto us anyway (nothing is fetched -- the
+        -- world is coming to us at 66 px/s), or failing both, the middle of the
+        -- gap ahead.
         local aim = aimY()
-        if aim then want = aim end
-
-        -- Dodge, and let it override the aim: the gap is a hard constraint, the
-        -- bullet is a preference, and being alive beats being on target.
-        local d = dodgeY()
-        if d ~= 0 then
-            want = Player.y + d * 46
+        if not aim and not Boss.active and not ufoClosing() then
+            local cap = capsuleNear()
+            if cap then aim = cap.y end
         end
-        want = Lib.clamp(want, ceil + 16, ground - 16)
+        aim = aim or mid
+
+        -- What we can SURVIVE, which outranks it.
+        local want, crowd = bestY(ceil, ground, aim)
 
         cmd.up = Player.y > want + 3
         cmd.down = Player.y < want - 3
 
-        cmd.left = Player.x > HOLD_X + 6
-        cmd.right = Player.x < HOLD_X - 6
+        -- Give ground when it gets busy. Retreating costs nothing in a frame
+        -- where the world comes to you regardless, and it turns a problem you
+        -- have half a second to solve into one you have a second to solve.
+        local holdX = crowd >= 2 and 72 or HOLD_X
+        cmd.left = Player.x > holdX + 6
+        cmd.right = Player.x < holdX - 6
 
         cmd.fire = true
         cmd.bomb = wantBomb()
@@ -186,5 +273,6 @@ Shmup.run(Content, {
     extra = function(t)
         t.fuel = math.floor(Player.fuel)
         t.bossActive = Boss.active and 1 or 0
+        for k, v in pairs(Shmup.causes) do t["d_" .. k] = v end
     end,
 })

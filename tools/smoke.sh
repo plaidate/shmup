@@ -2,21 +2,32 @@
 # shmup smoke runner: build the instrumented variant, run its autopilot in the
 # Playdate Simulator, poll the datastore, report.
 #
-#   tools/smoke.sh <game> [seconds]     one game
-#   tools/smoke.sh                      all three, PASS only if each one WON
+#   tools/smoke.sh <game> [seconds] [seed]   one game, one seed
+#   tools/smoke.sh                           all three x every seed in SEEDS
 #
-# The bar is deliberately high: a run is green only when the bot reached the win
-# screen ("wins":1). A bot that survives without winning is a bot that has
-# quietly stopped testing the second half of the game.
+# Two bars, both deliberately high.
+#
+# 1. A run is green only when the bot reached the WIN screen ("wins":1). A bot
+#    that survives without winning has quietly stopped testing the second half
+#    of the game.
+#
+# 2. Runs are SEEDED, and the bot must win every seed. A smoke build that seeds
+#    from the clock plays a different game every time: a pass proves nothing and
+#    a failure is indistinguishable from bad luck. This engine's cave-flyer sat
+#    at seven wins in eight for an afternoon, which is the worst place to be --
+#    too good to look broken, too flaky to trust. Fixed seeds turn "it usually
+#    works" into a list of games that either work or do not.
 
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SIM="$HOME/Developer/PlaydateSDK/bin/Playdate Simulator.app/Contents/MacOS/Playdate Simulator"
+SEEDS="${SEEDS:-1 2 3 4}"
 
 run_one() {
     local GAME="$1"
     local SECS="${2:-90}"
+    local SEED="${3:-1}"
     local TITLE
     TITLE="$(echo "$GAME" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
     local BUNDLE="com.sdwfrost.shmup.$GAME"
@@ -24,7 +35,9 @@ run_one() {
     local SHOT="$ROOT/build/$GAME-shot.png"
 
     cd "$ROOT"
-    make "$GAME-smoke" >/dev/null || { echo "$GAME: BUILD FAILED"; return 1; }
+    rm -rf "build/$GAME-smoke"
+    make "$GAME-smoke" SEED="$SEED" >/dev/null || {
+        echo "$GAME: BUILD FAILED"; return 1; }
 
     pkill -9 -f "Playdate Simulator" 2>/dev/null
     rm -rf "$DATA"
@@ -40,7 +53,7 @@ run_one() {
     sleep 2
     pkill -9 -f "Playdate Simulator" 2>/dev/null
 
-    echo "=== $GAME"
+    echo "=== $GAME (seed $SEED)"
     if [ -s "$DATA/err.json" ]; then
         echo "  ERROR: $(cat "$DATA/err.json")"
         rm -rf "$DATA"
@@ -75,8 +88,14 @@ fi
 
 fail=0
 for g in nova ravine skimmer; do
-    run_one "$g" 120 || fail=1
+    for s in $SEEDS; do
+        run_one "$g" 150 "$s" || fail=1
+    done
 done
 echo
-if [ $fail -eq 0 ]; then echo "SMOKE: all three won"; else echo "SMOKE: FAILED"; fi
+if [ $fail -eq 0 ]; then
+    echo "SMOKE: every game won on every seed ($SEEDS)"
+else
+    echo "SMOKE: FAILED"
+fi
 exit $fail

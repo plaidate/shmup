@@ -44,10 +44,17 @@ Content = {
         darter = { sprite = "darter", hp = 1, r = 5, score = 150,
                    move = Movers.sine(120, 55, 3.0), fire = Firers.none() },
 
+        -- The weaver always drops a gun. It is the enemy that shoots back and
+        -- takes two hits, so the upgrade is a reward for engaging the dangerous
+        -- thing -- and it takes the weapon ladder out of the hands of the RNG.
+        -- While it was a 30% roll, the run's outcome was decided by dice before
+        -- the boss ever arrived: every losing seed reached the dreadnought on
+        -- weapon 1 and ground it down to nothing over a fight it could not
+        -- survive.
         weaver = { sprite = "grunt", hp = 2, r = 6, score = 200,
                    move = Movers.sine(70, 90, 2.2),
                    fire = Firers.aimed(2.2, 120),
-                   drop = { "gun", 0.3 } },
+                   drop = "gun" },
 
         gunner = { sprite = "gunner", hp = 3, r = 9, score = 300,
                    move = Movers.dropHover(56, 55, 44, 1.2),
@@ -60,7 +67,7 @@ Content = {
         -- second -- once it is half dead -- is the one that kills you: it stops
         -- aiming and starts filling the screen.
         dreadnought = {
-            sprite = "dread", hp = 70, r = 30, score = 5000,
+            sprite = "dread", hp = 56, r = 30, score = 5000,
             from  = { x = 200, y = -40 },
             enter = { x = 200, y = 54 },
             phases = {
@@ -79,17 +86,26 @@ Content = {
                     end,
                 },
                 {
+                    -- The desperate phase. It used to fire a full 360-degree
+                    -- RING, which is a lovely thing to watch and a rotten thing
+                    -- to fight: a ring from a boss at the top of the screen puts
+                    -- its densest fire directly beneath itself, and directly
+                    -- beneath it is the one place you have to stand to shoot
+                    -- back. That is not difficulty, it is a game asking you to
+                    -- choose between attacking and living. A wide downward
+                    -- spread threatens the same width of screen but leaves
+                    -- pockets you can be IN -- and a boss you can fight is
+                    -- harder than a boss you can only flee.
                     above = 0.0,
                     move = function(b, dt)
-                        b.x = 200 + math.sin(b.t * 1.5) * 130
+                        b.x = 200 + math.sin(b.t * 1.15) * 130
                     end,
                     fire = function(b, dt)
                         local d = b.data
                         d.t = (d.t or 0) + dt
-                        if d.t >= 1.1 then
+                        if d.t >= 1.35 then
                             d.t = 0
-                            d.ph = (d.ph or 0) + 0.3
-                            Bullets.eRing(b.x, b.y + 10, 10, 105, d.ph)
+                            Bullets.eSpread(b.x, b.y + 20, 7, 2.3, 120)
                             Bullets.eAimed(b.x, b.y + 20, 150)
                         end
                     end,

@@ -16,10 +16,16 @@
 # game's main.lua, and one of the three had a stray repo prefix in it -- so that
 # game's smoke screenshots silently went nowhere for its entire life. A path
 # that a human types once per game is a path that is wrong in one game.
+#
+# It also carries SMOKE_SEED. A shipped game seeds its RNG from the clock; a
+# smoke build must not, or every run is a different game and a green run proves
+# nothing. `make <game>-smoke SEED=7` fixes the run; tools/smoke.sh sweeps
+# several seeds and needs the bot to win ALL of them.
 
 SDK ?= $(HOME)/Developer/PlaydateSDK
 SIMULATOR ?= $(SDK)/bin/Playdate Simulator.app
 GAMES := nova ravine skimmer
+SEED ?= 1
 OUT := out
 DIST := dist
 
@@ -51,7 +57,7 @@ build/$(1)-smoke/source: core/*.lua games/$(1)/*
 	cp core/*.lua $$@/
 	cp -r games/$(1)/* $$@/
 	cp LICENSE $$@/
-	printf 'SMOKE_BUILD = true\nSMOKE_SHOT_PATH = "$(CURDIR)/build/$(1)-shot.png"\n' > $$@/smokeflag.lua
+	printf 'SMOKE_BUILD = true\nSMOKE_SEED = $(SEED)\nSMOKE_SHOT_PATH = "$(CURDIR)/build/$(1)-shot.png"\n' > $$@/smokeflag.lua
 
 .PHONY: $(1) $(1)-smoke run-$(1)
 endef

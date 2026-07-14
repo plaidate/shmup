@@ -74,10 +74,19 @@ Content = {
 
         tank   = { sprite = "tank", hp = 2, r = 8, score = 200,
                    move = Movers.groundLeft(7), fire = Firers.aimed(2.2, 100),
-                   drop = { "gun", 0.3 } },
+                   drop = { "gun", 0.5 } },
 
+        -- The dump ALWAYS drops a gun, and that is a difficulty decision, not a
+        -- generosity one. A dump can only be killed by a bomb, and bombing is
+        -- the one skill this level exists to teach -- so the upgrade is a
+        -- reward for the thing you are being asked to learn, not a lottery.
+        -- While it was a lottery, the game had a death spiral in it: miss the
+        -- roll, stay on weapon 1, take longer to kill everything, die, lose a
+        -- rung you never had. Every losing run ended on weapon 1; every run
+        -- that reached weapon 3 won.
         dump   = { sprite = "dump", hp = 1, r = 8, score = 100, fuel = 45,
-                   move = Movers.groundLeft(8), fire = Firers.none() },
+                   move = Movers.groundLeft(8), fire = Firers.none(),
+                   drop = "gun" },
 
         ufo    = { sprite = "ufo", hp = 1, r = 7, score = 250,
                    move = Movers.leftSine(130, 42, 2.4),

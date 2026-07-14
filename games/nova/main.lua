@@ -33,54 +33,8 @@ local function makeBot()
     local cmd = { left = false, right = false, up = false, down = false,
                   fire = false, bomb = false, start = false }
 
-    -- Which way to sidestep. The first version of this compared each bullet's
-    -- CURRENT x to ours, which is a bot dodging where the bullet is instead of
-    -- where it is going: it beat the waves and then died to the boss every run,
-    -- because the boss's aimed shots are launched at an angle. So: solve for
-    -- when each bullet crosses our row, ask where it will be at that moment,
-    -- and lean away from the ones that will land on us.
-    local function dodge()
-        local shift, nearest = 0, 999
-
-        local ep = Bullets.ep
-        for i = 1, ep.n do
-            local b = ep.items[i]
-            if not b.dead and b.vy > 20 then
-                local t = (Player.y - b.y) / b.vy      -- time to our row
-                if t > 0 and t < 1.1 then
-                    local dx = (b.x + b.vx * t) - Player.x
-                    if math.abs(dx) < 24 then
-                        shift = shift + (dx >= 0 and -1 or 1)
-                        if math.abs(dx) < math.abs(nearest) then nearest = dx end
-                    end
-                end
-            end
-        end
-
-        local pool = Enemies.pool
-        for i = 1, pool.n do
-            local e = pool.items[i]
-            if not e.dead then
-                local dy = Player.y - e.y
-                if dy > -8 and dy < 90 then
-                    local dx = e.x - Player.x
-                    if math.abs(dx) < 28 then
-                        shift = shift + (dx >= 0 and -1 or 1)
-                        if math.abs(dx) < math.abs(nearest) then nearest = dx end
-                    end
-                end
-            end
-        end
-
-        -- Pinned from both sides: the sum cancels to zero and the naive bot
-        -- stands perfectly still in the crossfire. Break the tie by running for
-        -- the wider half of the screen.
-        if shift == 0 and math.abs(nearest) < 14 then
-            return Player.x < 200 and 1 or -1
-        end
-        return Lib.sign(shift)
-    end
-
+    -- What we would LIKE to be under: the boss, or whatever is closest to
+    -- reaching our line, or -- if the sky is clear -- a capsule to collect.
     local function targetX()
         if Boss.active then return Boss.x end
 
@@ -89,7 +43,6 @@ local function makeBot()
         for i = 1, pool.n do
             local e = pool.items[i]
             if not e.dead then
-                -- prefer whatever is closest to reaching our line
                 local d = math.abs(e.x - Player.x)
                     + math.max(0, Player.y - e.y) * 0.35
                 if not bd or d < bd then bd, best = d, e end
@@ -104,6 +57,82 @@ local function makeBot()
         return 200
     end
 
+    -- PICK A COLUMN. Do not lean away from things.
+    --
+    -- This bot used to sidestep reactively: find the incoming bullets, lean the
+    -- other way. That works until it doesn't, and the way it stops working is
+    -- ugly -- a lean summed over several bullets cancels to zero exactly when
+    -- you are caught between two of them, and a lean recomputed every frame
+    -- slides you just far enough that the threat stops registering, at which
+    -- point you steer calmly back into it.
+    --
+    -- It hid, too. Seeded from the clock, this bot won often enough to look
+    -- fine; the moment the smoke runs were given FIXED seeds it turned out to
+    -- lose two of the first four. That is the whole argument for seeding.
+    --
+    -- The screen is 400 px wide and the ship can be at any of them, so: score
+    -- every column by how close the incoming fire will pass to it AT THE MOMENT
+    -- IT ARRIVES, add the cost of flying there and a pull toward what we want to
+    -- shoot, and take the best. A planner, not a reflex -- and it cannot
+    -- oscillate, because the cost of moving is part of what it minimises.
+    -- One more thing Ravine's version could take for granted and this one cannot.
+    -- Ravine's gap is 150 px tall, so every candidate altitude is a short hop and
+    -- the trip is free. This screen is 400 px wide, and a column that is safe
+    -- when the bullets arrive is worthless if crossing to it means walking
+    -- through the stream on the way. Searching the whole screen made the bot
+    -- strictly WORSE -- it kept electing to be somewhere lovely and dying en
+    -- route. So it only considers columns it can actually reach in the time it
+    -- has: about half a second of travel, either side.
+    local function bestX()
+        local ep, pool = Bullets.ep, Enemies.pool
+        local aim = targetX()
+        local best, bestScore = Player.x, -1e18
+
+        local lo = math.max(26, Player.x - 84)
+        local hi = math.min(374, Player.x + 84)
+
+        for x = lo, hi, 6 do
+            local danger = 0
+
+            for i = 1, ep.n do
+                local b = ep.items[i]
+                if not b.dead and b.vy > 20 then
+                    local t = (Player.y - b.y) / b.vy         -- time to our row
+                    if t > 0 and t < 1.6 then
+                        local d = math.abs((b.x + b.vx * t) - x)
+                        if d < 30 then danger = danger + (30 - d) end
+                    end
+                end
+            end
+
+            for i = 1, pool.n do
+                local e = pool.items[i]
+                if not e.dead then
+                    local dy = Player.y - e.y
+                    if dy > -10 and dy < 110 then
+                        local d = math.abs(e.x - x)
+                        -- a hull is bigger than a bullet and kills just as dead
+                        if d < 34 then danger = danger + (34 - d) * 2 end
+                    end
+                end
+            end
+
+            -- Survival outranks aim -- but only just, and getting the ratio
+            -- wrong is fatal in both directions. Weight aim too high and the bot
+            -- parks under the boss, which is exactly where the boss's rings are
+            -- densest. Weight it too low and the bot stops lining up on anything
+            -- at all: it scored 1550 and died with the boss on 49 HP, having
+            -- spent the whole level gracefully dodging enemies it never shot.
+            -- A bot that will not commit to a firing line does not run out of
+            -- luck, it runs out of level.
+            local score = -danger * 5 - math.abs(x - Player.x) * 0.3
+                - math.abs(x - aim) * 0.4
+            if score > bestScore then bestScore, best = score, x end
+        end
+
+        return best
+    end
+
     return function()
         local st = Harness.counters.state or 1
         cmd.left, cmd.right, cmd.up, cmd.down = false, false, false, false
@@ -114,17 +143,9 @@ local function makeBot()
             return cmd
         end
 
-        local sh = dodge()
-        if sh ~= 0 then
-            cmd.left, cmd.right = sh < 0, sh > 0
-        else
-            local tx = targetX()
-            cmd.left = tx < Player.x - 4
-            cmd.right = tx > Player.x + 4
-        end
-
-        if Player.x < 26 then cmd.left, cmd.right = false, true end
-        if Player.x > 374 then cmd.right, cmd.left = false, true end
+        local want = bestX()
+        cmd.left = want < Player.x - 4
+        cmd.right = want > Player.x + 4
 
         -- Sit as low as the frame allows: every pixel of altitude the bot gives
         -- up is reaction time it buys back.
@@ -139,5 +160,6 @@ Shmup.run(Content, {
     autopilot = Harness.enabled and makeBot() or nil,
     extra = function(t)
         t.bossActive = Boss.active and 1 or 0
+        for k, v in pairs(Shmup.causes) do t["d_" .. k] = v end
     end,
 })
