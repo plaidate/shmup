@@ -39,6 +39,7 @@ Lib.KILL_MARGIN = 40
 -- slot (or nil when full); update(fn) runs fn(e) over live slots and compacts
 -- out any the callback marked e.dead. Order is not preserved.
 --
+-- snip: pool-spawn
 -- The slot's `data` sub-table (scratch space for movement behaviours) is
 -- cleared IN PLACE and handed back, never reallocated. A pool that allocates a
 -- table per spawn is not a pool, it is a table factory with extra steps -- and
@@ -64,6 +65,7 @@ function Pool:spawn()
     e.dead = false
     return e
 end
+-- endsnip
 
 function Pool:clear() self.n = 0 end
 
@@ -86,6 +88,7 @@ function Pool:each(fn)
     for i = 1, self.n do fn(self.items[i]) end
 end
 
+-- snip: pool-eachlive
 -- live slots only. Collision marks e.dead mid-frame and compaction does not
 -- happen until the next update, so a corpse drawn with :each is drawn on top
 -- of its own explosion for exactly one frame. Draw with :eachLive.
@@ -95,3 +98,4 @@ function Pool:eachLive(fn)
         if not e.dead then fn(e) end
     end
 end
+-- endsnip

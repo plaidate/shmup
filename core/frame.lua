@@ -41,6 +41,7 @@ function Frame.reset()
     Frame.scroll = 0  -- how far the world has advanced (side, vertical)
 end
 
+-- snip: frame-questions
 -- ---- 1. the transform ----
 -- In free mode this is all that stands between a world coordinate and a pixel.
 -- In the scrollers it is the identity, and the branch predicts.
@@ -64,6 +65,7 @@ function Frame.bounds()
     end
     return 8, SCREEN_W - 8, Frame.top, Frame.bottom
 end
+-- endsnip
 
 -- Where the player starts.
 function Frame.spawnPoint()
@@ -84,6 +86,7 @@ function Frame.respawnPoint(x, y)
     return rx, (Frame.top + Frame.bottom) / 2
 end
 
+-- snip: frame-forward
 -- ---- 4. forward ----
 -- The scrollers have a fixed forward. Free mode does not: the ship turns
 -- around, so forward is the player's facing and the sprite flips to match.
@@ -94,6 +97,7 @@ function Frame.fireDir(facing)
 end
 
 function Frame.flips() return Frame.free end
+-- endsnip
 
 -- ...and which way is forward for THEM. A spread pattern fired by an enemy
 -- should fan out along the axis the player is coming from, which is the
@@ -105,6 +109,7 @@ function Frame.enemyAngle()
 end
 
 --------------------------------------------------------------------------------
+-- snip: frame-spentcull
 -- Two questions that are easy to conflate, and expensive to conflate.
 
 -- SPENT: this projectile can never matter again. Measured against the visible
@@ -125,6 +130,7 @@ function Frame.cull(x, y)
     local m = Lib.KILL_MARGIN
     return x < -m or x > SCREEN_W + m or y < -m or y > SCREEN_H + m
 end
+-- endsnip
 
 -- worth drawing?
 function Frame.visible(x, margin)

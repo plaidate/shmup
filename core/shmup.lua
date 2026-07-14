@@ -175,12 +175,14 @@ local function collide()
     end
 end
 
+-- snip: shmup-won
 -- THE win condition. If the level has a boss, the boss IS the ending -- full
 -- stop. Only a level with no boss falls back to "the spawn script ran out".
 local function won()
     if Waves.hasBoss then return Boss.defeated end
     return Waves.finished()
 end
+-- endsnip
 
 --------------------------------------------------------------------------------
 function Shmup.new(c)

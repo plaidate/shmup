@@ -50,6 +50,7 @@ function Terrain.init(cfg)
     Terrain.sample()
 end
 
+-- snip: terrain-sample
 -- Rebuild the profile for the frame's current scroll: 51 samples, once a frame.
 function Terrain.sample()
     local scroll = Frame.scroll
@@ -59,11 +60,13 @@ function Terrain.sample()
         cy[i] = genCeil(wx)
     end
 end
+-- endsnip
 
 function Terrain.reset() Terrain.sample() end
 function Terrain.update(dt) Terrain.sample() end
 function Terrain.speed() return Frame.speed end
 
+-- snip: terrain-read
 -- Read the profile the way the renderer draws it: lerp between samples.
 local function lerpAt(prof, sx)
     local t = sx / STEP
@@ -78,6 +81,7 @@ function Terrain.ceilY(sx) return lerpAt(cy, sx) end
 function Terrain.hits(x, y, r)
     return (y + r >= lerpAt(gy, x)) or (y - r <= lerpAt(cy, x))
 end
+-- endsnip
 
 -- The draw buffers are preallocated and refilled in place: two 106-element
 -- tables per frame was a steady drip of garbage for no reason at all.

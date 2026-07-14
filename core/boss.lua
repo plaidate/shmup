@@ -73,6 +73,7 @@ function Boss.vulnerable()
     return Boss.active and Boss.state == "fight"
 end
 
+-- snip: boss-phase
 local function phase()
     local sp = Boss.spec
     local frac = Boss.hp / Boss.maxHp
@@ -97,6 +98,7 @@ function Boss.damage(dmg)
     Snd.hit()
     return false
 end
+-- endsnip
 
 function Boss.update(dt)
     if not Boss.active then return end
@@ -144,6 +146,7 @@ end
 function Boss.draw()
     if not Boss.active then return end
 
+-- snip: boss-noflash
     -- NO hit flash. The enemies get one -- fill the silhouette solid, it blooms
     -- for two frames and reads as damage -- but a boss is under sustained fire:
     -- it takes a hit roughly eight times a second, so the "flash" never lets
@@ -152,6 +155,7 @@ function Boss.draw()
     -- took one look at a screenshot.) Damage is legible from the health bar,
     -- the impact sound, and the bullets winking out against the hull.
     Sprites.draw(Boss.spec.sprite, Frame.toScreenX(Boss.x), Boss.y)
+-- endsnip
 
     if Boss.state == "dying" then return end
 

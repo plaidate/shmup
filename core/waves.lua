@@ -29,6 +29,7 @@ function Waves.load(script)
     end
 end
 
+-- snip: waves-ready
 local function ready(w)
     if w.at then return Player.x >= w.at end
     return (w.t or 0) <= Waves.t
@@ -54,6 +55,7 @@ function Waves.update(dt)
     end
     if Waves.i > #s then Waves.done = true end
 end
+-- endsnip
 
 -- Exhausted the script and swept the screen. This is NOT the win condition when
 -- there is a boss -- see Shmup.won(). A level that declares victory the instant
