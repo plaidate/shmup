@@ -1,180 +1,206 @@
 # shmup — player's manual
 
-Three little 1-bit shoot-'em-ups on one engine: a vertical wave shooter, a
-Scramble-style cave-flyer, and a Uridium-style back-and-forth hull run. Solid
-white ships on black space, no dither, no fuss. Each is a separate `.pdx` you
-sideload; pick your poison below.
+Three little 1-bit shoot-'em-ups on one engine. They are the same genre seen
+from three different **frames of reference** — in Nova Strike the world falls
+past you, in Ravine it drags you along, and in Skimmer it does not move at all
+and you fly *through* it. Solid white ships on black space, no dither, no fuss.
 
-Shared basics: the **d-pad** flies, **A** fires (auto-repeats while held), and
-you get **3 lives**. Losing a life recentres you with a brief blink of
-invulnerability. Clear the run to win; run out of lives and it's GAME OVER —
-press **A** to return to the title from either banner. Score is shown top-left,
-lives top-right.
+Each is a separate `.pdx` you sideload. Pick your poison below.
+
+## The basics (all three games)
+
+- **D-pad** — fly.
+- **A** — fire. Hold it; the gun auto-repeats. (Which way it fires depends on
+  the frame: up in Nova Strike, forward in Ravine, and in Skimmer whichever way
+  you last flew.)
+- **B** — drop a bomb. Ravine only; there is nothing to bomb in the other two.
+- **A** on the title screen starts a run. **A** on the GAME OVER or CLEAR banner
+  takes you back to the title.
+
+You get **3 lives**. Losing one gives you a moment of blinking invulnerability
+to get out of whatever killed you — and knocks your gun back down a rung, which
+is usually the bigger loss. **An extra life at 20,000 points.** Your best score
+is saved and shown on the title screen.
+
+**Power-up capsules** drop from certain enemies and drift for a few seconds
+before blinking out:
+
+| capsule | effect |
+| --- | --- |
+| **arrow** | one rung up the weapon ladder |
+| **ring** | a shield — it absorbs exactly one hit, then it is gone |
+| **cross** | an extra ship |
+
+The **weapon ladder** has three rungs, shown as three pips next to your score.
+Rung 1 is a single shot; rung 2 splits it into a twin; rung 3 adds an angled
+pair on top of the twin, and fires faster as well. A gun at full rung roughly
+doubles your damage — which is exactly what a boss health bar is measured in.
+(The three levels here hand out arrows and rings; the cross is what 20,000
+points is for.)
+
+Every game ends with a **boss**, and the boss *is* the ending: the level is not
+cleared until it comes apart. Its health bar runs along the bottom of the
+screen. Bosses change their behaviour once they are about half dead, and the
+second half is always worse than the first.
 
 ---
 
-## Nova Strike
+## Nova Strike — the vertical frame
 
-*Hold the line against wave after wave of descending raiders.*
+*Hold the line while the sky falls on you.*
 
-A classic top-down vertical shooter. Enemies pour in from the top in scripted
-waves — sweeping columns, weaving divers, hovering gun platforms — and your job
-is to shoot them all before they shoot (or ram) you. Survive the whole
-~30-second wave script and the sky clears.
+A classic top-down wave shooter, in the frame *Xevious* invented: the world
+scrolls down past a ship that is locked to the screen. Enemies pour in from the
+top in scripted waves — sweeping columns, weaving divers, hovering gun platforms
+— for about thirty seconds, and then the **Dreadnought** arrives.
 
 **Controls**
 
 - **D-pad** — fly (all four directions)
-- **A** — fire twin forward shots (hold to auto-fire)
+- **A** — fire straight up (hold to auto-fire)
 
 **How to play**
 
-Your ship sits near the bottom and fires straight up in two parallel streams.
-Enemies enter from the top and move down; some track you and spit bullets.
-Weave through the fire, keep the trigger down, and thin each wave as it arrives.
-Colliding with an enemy or an enemy bullet costs a life. Clear the timeline
-(all waves spawned *and* nothing left alive) to reach **CLEAR!**
-
-**Scoring**
-
-- Grunt — 100
-- Darter — 150
-- Weaver — 200
-- Gunner — 300
+Sit low, keep the trigger down, and thin each wave as it arrives. Colliding with
+an enemy or an enemy bullet costs a life. Kill the Dreadnought to reach **SECTOR
+CLEAR**.
 
 **Enemies**
 
-- **Grunt** — a plain drone that flies straight down. Doesn't shoot. 1 hit.
-  Arrives in sweeping columns.
-- **Darter** — a fast arrowhead that weaves side-to-side as it descends.
-  Doesn't shoot, but the wide sine path makes it hard to line up. 1 hit.
-- **Weaver** — a tougher grunt (2 hits) on a slower, wider weave that **fires
-  aimed shots** at you every couple of seconds.
-- **Gunner** — a heavy gun platform (3 hits). Drops to the top of the screen,
-  then hovers and drifts while firing a **3-shot spread** downward. The main
-  threat; often arrives in pairs on opposite sides.
+- **Grunt** (100) — a plain drone that flies straight down and does not shoot.
+  One hit. Arrives in sweeping columns. Sometimes drops a gun capsule.
+- **Darter** (150) — a fast arrowhead that weaves hard as it descends. Does not
+  shoot, but the wide sine makes it awkward to line up.
+- **Weaver** (200) — a tougher grunt (2 hits) on a slower, wider weave that
+  **fires aimed shots** at you every couple of seconds. Drops guns.
+- **Gunner** (300) — a heavy gun platform (3 hits). Drops to the top of the
+  screen, then hovers and drifts while firing a **3-shot spread** downward. The
+  main threat, and the best source of shields — often arriving in pairs on
+  opposite sides.
+- **Dreadnought** (5,000) — the boss. It sweeps across the top firing a wide
+  spread you can out-position; below half health it stops aiming and starts
+  filling the screen with **rings**, plus an aimed shot straight at you.
 
 **Tips**
 
-- Stay mobile horizontally — the twin streams are narrow, so line up kills by
-  sliding under targets rather than chasing them.
-- Kill gunners first; their spread fills the screen while grunts and darters
-  can only hurt you by collision.
-- Darters telegraph their arc — pick the side they're weaving toward and let
-  them come to your bullets.
-- Weavers and gunners take multiple hits; keep firing *through* them rather
-  than tapping.
-- When two gunners flank you, sit centre-bottom and pick the gaps between the
-  two spreads.
+- Stay low. Every pixel of altitude you give up is reaction time you buy back.
+- Kill gunners first. Grunts and darters can only hurt you by collision;
+  gunners fill the screen.
+- The Dreadnought's aimed shot is launched *at an angle*. Do not dodge to where
+  the bullet is — dodge out of the row it will be in when it arrives.
+- When two gunners flank you, sit centre-bottom and read the gaps between the
+  two spreads rather than running for a side.
 
 ---
 
-## Ravine
+## Ravine — the side frame
 
-*Thread a scrolling cavern, shoot the sky, bomb the ground, and don't run dry.*
+*Thread a scrolling cavern, bomb the fuel dumps, and do not run dry.*
 
-A horizontal, forced-scroll Scramble-style flyer. The cave scrolls past you at
-a fixed pace; you can move anywhere on screen but you can't slow the world down.
-Air targets need forward fire, ground targets need bombs, the walls kill on
-touch, and a **fuel gauge drains constantly** — so you have to keep bombing the
-fuel dumps to stay airborne.
+A Scramble-style cave-flyer, in the frame where the world scrolls left **at a
+rate you cannot change**. You can go anywhere on the screen; you cannot slow the
+cavern down. Air targets need forward fire, ground targets need bombs, the walls
+kill on touch, and the **fuel gauge drains constantly**.
 
 **Controls**
 
-- **D-pad** — fly through the cavern gap
+- **D-pad** — fly the gap
 - **A** — fire forward (hold to auto-fire)
-- **B** — drop a bomb (arcs down onto the ground)
+- **B** — drop a bomb (it arcs forward and down)
 
 **How to play**
 
-Fly the black gap between the white ceiling and floor — touching either wall
-costs a life. Forward shots handle the air threats (UFOs, rising rockets);
-bombs lob downward under gravity to hit ground targets (tanks, fuel dumps).
-The **fuel bar** at the top ticks down the whole time; bomb a **fuel dump** to
-top it back up. Empty fuel costs a life just like a crash. Reach the end of the
-wave run to clear the ravine.
+Fly the black gap between the white ceiling and the white floor; touching either
+costs a life. Shoot the air (UFOs, rising rockets); bomb the ground (tanks, fuel
+dumps). The **fuel bar** across the top ticks down the whole time and an empty
+tank costs a life exactly like a crash — so **bombing the fuel dumps is not
+optional**. The dumps are the crates with an "F" punched out of them; each one is
+worth 45% of a tank. Kill the **Barge** at the end to reach **CAVERN CLEAR**.
 
-**Scoring**
+**Enemies and hazards**
 
-- Fuel dump — 100 (and refuels you)
-- Rocket — 150
-- Tank — 200
-- UFO — 250
-
-**Enemies & hazards**
-
-- **Cavern walls** — the white ceiling and floor silhouettes. Instant life loss
-  on contact; there is no shooting them, only avoiding them.
-- **UFO** — an airborne saucer that weaves in on a sine path and **fires aimed
-  shots** at you. Kill with forward fire. 1 hit.
-- **Rocket** — launches from the ground and **rises** while drifting with the
-  scroll. Doesn't shoot, but climbs into your lane. 1 hit; forward fire.
-- **Tank** — rides along the ground surface and **lobs aimed shots** upward.
-  2 hits, and it sits on the floor — you'll usually need a **bomb** to reach it.
-- **Fuel dump** — looks like a tank but doesn't shoot; **bomb it to refuel**
-  (+30 fuel) and score 100. Missing these is what eventually strands you.
+- **Cavern walls** — solid white ceiling and floor. Instant life loss on contact.
+  You cannot shoot them; you can only fly them.
+- **Fuel dump** (100, **+45 fuel**) — an inert ground crate marked "F". Bomb it.
+  Missing these is what strands you.
+- **Rocket** (150) — launches off the floor and climbs straight up through the
+  gap while the world carries it left. Does not shoot; it does not need to.
+- **Tank** (200) — rides the ground surface and **lobs aimed shots** upward. Two
+  hits, and it is on the floor, so bring a bomb. Drops guns.
+- **UFO** (250) — an airborne saucer weaving in on a sine, **firing aimed shots**.
+  Forward fire kills it. Best source of shields.
+- **Barge** (6,000) — the boss. A gun platform that noses in from the right and
+  fires **spreads** while sliding up and down; below half health the spreads
+  widen, quicken, and come with an aimed shot.
 
 **Tips**
 
-- Fuel is the real enemy. Prioritise bombing every fuel dump even if it means
-  ignoring a UFO — a full gauge buys you time, a kill doesn't.
-- Bombs arc *forward and down*, so release them a little before you're over a
-  ground target, not directly on top of it.
-- Hug the centre of the gap through tight sections; the walls undulate and a
-  narrow pinch will clip you if you're riding one edge.
-- You keep firing forward while bombing — hold **A** constantly and tap **B**
-  as ground targets slide into range.
-- Rockets rise into you from below; watch the floor for launches and drift up
-  early.
+- Fuel is the real enemy. Bomb every dump even if it means letting a UFO live —
+  a full gauge buys time; a kill does not.
+- **Bombs are ballistic.** They leave the ship moving forward and fall under
+  gravity, and the target is sliding *toward* you meanwhile. Release early; the
+  drop point is well short of the thing you are aiming at.
+- You can fire and bomb at once. Hold **A** permanently and tap **B**.
+- Rockets climb into the exact middle of the gap — which is where you were
+  planning to be. Watch the floor for launches and commit high or low early.
+- Hug the centre through tight pinches; the walls undulate, and riding an edge
+  through a narrowing section is how you clip one.
 
 ---
 
-## Skimmer
+## Skimmer — the free frame
 
-*Skim the hull of a vast dreadnought, weaving girders and picking off defenders
-— any direction you like.*
+*Skim a two-kilometre dreadnought hull, in either direction, and kill what is
+bolted to the far end.*
 
-A Uridium-style demo of **bidirectional** scrolling. You pilot a fast skimmer
-over a long warship hull; fly left or right and the camera follows, so the
-world scrolls whichever way you go. It's about reading the girders and reversing
-direction, not just holding right. Reach the far end of the hull to clear it.
+The *Uridium* frame, and the odd one out. The level is a **place**, not a
+timeline: 2,400 pixels of enemy warship that is simply *there*. Fly left or
+right and the camera follows you; the defenders you passed are still standing
+where you left them, and so is anything you did not finish.
 
 **Controls**
 
-- **D-pad** — fly in any direction; **left/right also sets your facing**
-- **A** — fire in the direction you're facing (hold to auto-fire)
+- **D-pad** — fly; **left/right also sets your facing**
+- **A** — fire in the direction you are facing (hold to auto-fire)
 
 **How to play**
 
-The top and bottom hull bands are solid; you fly the space between them. Girders
-jut down from the ceiling and up from the floor — **crashing into one costs a
-life**, so weave through the gaps. Your gun fires whichever way you last moved
-horizontally, so to shoot a defender behind you, tap back toward it first. The
-position bar at the top shows how far along the hull you are; run all the way to
-the right end to reach **HULL CLEARED**.
+The top and bottom hull bands are solid; you fly the corridor between them.
+**Girders** jut down from the ceiling and up from the floor, alternating — hit
+one and it costs a life, so pick your side of the corridor *early*. Shoot the
+defenders; they shoot back once you are in range. The **position bar** at the
+top is your map: it is the only way to see that a level with two ends has ends.
+Fly to the far end and the reactor **Core** wakes up. Kill it to reach **HULL
+CLEARED**.
 
-**Scoring**
+If you die, you come back a little *short* of where you fell rather than at the
+start — the ship you already cleared stays cleared.
 
-- Defender — 200 each
+**Enemies and hazards**
 
-**Enemies & hazards**
-
-- **Girders** — white pillars alternating from ceiling and floor. Static, but a
-  crash is a lost life. These are the whole navigation puzzle.
-- **Defenders** — arrow-shaped guns anchored along the hull, each **bobbing up
-  and down** on its own sine. They don't fire, but ramming one costs you a life
-  (and destroys it). Shoot them from range in your facing direction. 1 hit, 200
-  points.
+- **Girders** — white pillars from the ceiling and the floor. Static, silent, and
+  a crash is a life. They are the whole navigation puzzle.
+- **Defender** (200) — an arrowhead gun anchored to the hull, bobbing on its post.
+  It **fires aimed shots at you, but only when you are close enough to matter**.
+  One hit. Sometimes drops a gun capsule.
+- **Sentry** (350) — a tougher defender (2 hits) that **patrols** a stretch of the
+  hull rather than holding a post. Drops shields.
+- **Core** (8,000) — the boss, and the reason you came. It does not enter: it has
+  been bolted to the end of the ship the whole time, and you are the one who
+  arrives. It fires slowly rotating **rings**; below half health it starts moving,
+  throws more of them, and aims one shot straight at you.
 
 **Tips**
 
-- Facing follows your last horizontal input — nudge toward a target before
-  firing, or you'll shoot the empty side.
-- Use the back-and-forth freedom: overshoot a girder cluster, then reverse to
-  clean up defenders you passed.
-- Defenders bob predictably — wait for one to drift into your lane rather than
-  chasing it into a girder.
-- The position bar is your map; if it's crawling you're fighting the walls, not
-  the level. Commit to gaps.
-- Invulnerability blinks after a crash — use that window to reposition out of a
-  tight girder run before it wears off.
+- Facing follows your last horizontal input. To shoot something behind you, tap
+  back toward it first — otherwise you will hose the empty side.
+- A girder forbids a *band*, it does not command an altitude. Work out which
+  half of the corridor is open, then move freely inside it. You still have to
+  dodge in there.
+- Use the reverse. Overshoot a girder cluster, then come back and clean up the
+  defenders you flew past — nothing you left behind has gone anywhere.
+- Do not fight the Core at point-blank. Its rings spawn *on top of you* at close
+  range; stand off far enough that you can see the whole thing and still have
+  room to dodge.
+- The position bar is the clock. If it has stopped, you are fighting the hull
+  and not the level. Commit to the gaps.

@@ -20,6 +20,8 @@ end
 
 function Lib.sign(v) return v > 0 and 1 or (v < 0 and -1 or 0) end
 
+function Lib.lerp(a, b, t) return a + (b - a) * t end
+
 function Lib.distSq(ax, ay, bx, by)
     local dx, dy = ax - bx, ay - by
     return dx * dx + dy * dy
@@ -31,22 +33,23 @@ function Lib.circlesHit(ax, ay, ar, bx, by, br)
 end
 
 Lib.KILL_MARGIN = 40
-function Lib.offscreen(x, y)
-    local m = Lib.KILL_MARGIN
-    return x < -m or x > SCREEN_W + m or y < -m or y > SCREEN_H + m
-end
 
 --------------------------------------------------------------------------------
 -- Pool: fixed array of preallocated entity tables. spawn() returns a cleared
 -- slot (or nil when full); update(fn) runs fn(e) over live slots and compacts
 -- out any the callback marked e.dead. Order is not preserved.
+--
+-- The slot's `data` sub-table (scratch space for movement behaviours) is
+-- cleared IN PLACE and handed back, never reallocated. A pool that allocates a
+-- table per spawn is not a pool, it is a table factory with extra steps -- and
+-- the collector comes for that garbage in the middle of a boss fight.
 
 Pool = {}
 Pool.__index = Pool
 
 function Pool.new(capacity)
     local p = setmetatable({ n = 0, cap = capacity, items = {} }, Pool)
-    for i = 1, capacity do p.items[i] = {} end
+    for i = 1, capacity do p.items[i] = { data = {} } end
     return p
 end
 
@@ -54,7 +57,10 @@ function Pool:spawn()
     if self.n >= self.cap then return nil end
     self.n = self.n + 1
     local e = self.items[self.n]
+    local d = e.data
     for k in pairs(e) do e[k] = nil end
+    for k in pairs(d) do d[k] = nil end
+    e.data = d
     e.dead = false
     return e
 end
@@ -78,4 +84,14 @@ end
 
 function Pool:each(fn)
     for i = 1, self.n do fn(self.items[i]) end
+end
+
+-- live slots only. Collision marks e.dead mid-frame and compaction does not
+-- happen until the next update, so a corpse drawn with :each is drawn on top
+-- of its own explosion for exactly one frame. Draw with :eachLive.
+function Pool:eachLive(fn)
+    for i = 1, self.n do
+        local e = self.items[i]
+        if not e.dead then fn(e) end
+    end
 end

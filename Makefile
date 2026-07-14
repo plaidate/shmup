@@ -1,17 +1,27 @@
-# shmup — a generic 1-bit vertical shoot-em-up engine (core/) with games on top.
+# shmup — a 1-bit shoot-'em-up engine (core/) with three games on top, one per
+# scroll frame: nova (vertical), ravine (side), skimmer (free).
 #
 #   make <game>          build games/<game> -> out/<Title>.pdx
 #   make <game>-smoke    instrumented build (autopilot) -> out/<Title>Smoke.pdx
 #   make all             every game, release builds
 #   make run-<game>      build + open in the Playdate Simulator
+#   make smoke           run every game's autopilot headless (tools/smoke.sh)
+#   make dist            release builds, zipped into dist/
 #
 # A build stages core/*.lua + games/<g>/* into build/<g>/source (pdc wants one
 # source root), writes smokeflag.lua, then runs pdc.
+#
+# smokeflag.lua carries the screenshot path, and the Makefile writes it as an
+# ABSOLUTE path from $(CURDIR). It used to be a string hand-written in each
+# game's main.lua, and one of the three had a stray repo prefix in it -- so that
+# game's smoke screenshots silently went nowhere for its entire life. A path
+# that a human types once per game is a path that is wrong in one game.
 
 SDK ?= $(HOME)/Developer/PlaydateSDK
 SIMULATOR ?= $(SDK)/bin/Playdate Simulator.app
 GAMES := nova ravine skimmer
 OUT := out
+DIST := dist
 
 define TITLECASE
 $(shell echo $(1) | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}')
@@ -34,21 +44,33 @@ build/$(1)/source: core/*.lua games/$(1)/*
 	cp core/*.lua $$@/
 	cp -r games/$(1)/* $$@/
 	cp LICENSE $$@/
-	echo 'SMOKE_BUILD = false' > $$@/smokeflag.lua
+	printf 'SMOKE_BUILD = false\nSMOKE_SHOT_PATH = nil\n' > $$@/smokeflag.lua
 
 build/$(1)-smoke/source: core/*.lua games/$(1)/*
-	mkdir -p $$@ $(OUT)
+	mkdir -p $$@ $(OUT) build
 	cp core/*.lua $$@/
 	cp -r games/$(1)/* $$@/
 	cp LICENSE $$@/
-	echo 'SMOKE_BUILD = true' > $$@/smokeflag.lua
+	printf 'SMOKE_BUILD = true\nSMOKE_SHOT_PATH = "$(CURDIR)/build/$(1)-shot.png"\n' > $$@/smokeflag.lua
 
 .PHONY: $(1) $(1)-smoke run-$(1)
 endef
 
 $(foreach g,$(GAMES),$(eval $(call GAME_RULES,$(g))))
 
+smoke:
+	tools/smoke.sh
+
+dist: all
+	mkdir -p $(DIST)
+	find $(DIST) -name '*.pdx.zip' -delete
+	for g in $(GAMES); do \
+	  t=$$(echo $$g | awk '{print toupper(substr($$0,1,1)) substr($$0,2)}'); \
+	  (cd $(OUT) && zip -qr ../$(DIST)/$$t.pdx.zip $$t.pdx); \
+	done
+	@ls -la $(DIST)
+
 clean:
 	rm -rf build $(OUT)
 
-.PHONY: all clean
+.PHONY: all clean smoke dist

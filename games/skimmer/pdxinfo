@@ -1,7 +1,7 @@
 name=Skimmer
 author=Simon Frost
-description=A 1-bit back-and-forth horizontal cave-flyer built on the shmup engine.
+description=A 1-bit Uridium-style hull-runner: fly a dreadnought both ways, kill the core.
 bundleID=com.sdwfrost.shmup.skimmer
-version=0.1
-buildNumber=2
+version=1.0
+buildNumber=3
 imagePath=launcher

@@ -1,7 +1,7 @@
 name=Ravine
 author=Simon Frost
-description=A 1-bit horizontal cave-flyer built on the shmup engine.
+description=A 1-bit Scramble-style cave-flyer: fly the gap, bomb the fuel dumps, kill the barge.
 bundleID=com.sdwfrost.shmup.ravine
-version=0.1
-buildNumber=2
+version=1.0
+buildNumber=3
 imagePath=launcher
